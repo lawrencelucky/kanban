@@ -7,10 +7,12 @@ const app = express();
 const connectDB = require('./db/connectdb');
 const errorHandlerMiddleware = require('./middleware/error-handler');
 const notFoundMiddleware = require('./middleware/not-found');
+const organizationAuthRoute = require('./routes/organizationAuth');
 const organizationRoute = require('./routes/organization');
 
 app.use(express.json());
 
+app.use('/api/v1/organization/auth', organizationAuthRoute);
 app.use('/api/v1/organization', organizationRoute);
 
 app.use(notFoundMiddleware);
