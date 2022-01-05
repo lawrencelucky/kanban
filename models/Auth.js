@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const OrganizationAuthSchema = new mongoose.Schema(
+const AuthSchema = new mongoose.Schema(
   {
     email: {
       type: String,
@@ -13,45 +13,41 @@ const OrganizationAuthSchema = new mongoose.Schema(
       ],
       unique: true,
     },
+    username: {
+      type: String,
+      required: [true, 'Please provide a nanme'],
+    },
     password: {
       type: String,
       required: [true, 'Please provide a password'],
       minlength: 6,
     },
-    name: {
-      type: String,
-      required: [true, 'Please provide a name of organization'],
-    },
-    description: {
-      type: String,
-      trim: true,
-    },
     role: {
       type: String,
-      default: 'Admin',
+      default: 'admin',
     },
   },
   { timestamps: true }
 );
 
-OrganizationAuthSchema.pre('save', async function () {
+AuthSchema.pre('save', async function () {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-OrganizationAuthSchema.methods.createJWT = function () {
+AuthSchema.methods.createJWT = function () {
   return jwt.sign(
-    { email: this.email, orgId: this._id, name: this.name },
-    process.env.ORG_JWT_SECRET,
-    { expiresIn: process.env.ORG_JWT_EXPIRY }
+    { adminId: this._id, email: this.email, username: this.username },
+    process.env.ADMIN_JWT_SECRET,
+    {
+      expiresIn: process.env.ADMIN_JWT_EXPIRY,
+    }
   );
 };
 
-OrganizationAuthSchema.methods.comparePassword = async function (
-  enteredPassword
-) {
+AuthSchema.methods.comparePassword = async function (enteredPassword) {
   const isMatch = await bcrypt.compare(enteredPassword, this.password);
   return isMatch;
 };
 
-module.exports = mongoose.model('OrganizationAuth', OrganizationAuthSchema);
+module.exports = mongoose.model('Auth', AuthSchema);

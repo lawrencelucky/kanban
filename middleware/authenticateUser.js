@@ -11,8 +11,12 @@ const authOrganization = (req, res, next) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    const payload = jwt.verify(token, process.env.ORG_JWT_SECRET);
-    req.organization = { name: payload.name, orgId: payload.orgId };
+    const payload = jwt.verify(token, process.env.USER_JWT_SECRET);
+    req.user = {
+      email: payload.email,
+      userId: payload.userId,
+      orgId: payload.orgId,
+    };
     next();
   } catch (error) {
     throw new UnauthenticatedError('Authentication Invalid');
