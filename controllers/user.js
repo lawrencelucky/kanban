@@ -1,36 +1,39 @@
 const { StatusCodes } = require('http-status-codes');
 
-const Organization = require('../models/Company');
+const Company = require('../models/Company');
 const User = require('../models/User');
 const { BadRequestError, UnauthenticatedError } = require('../errors');
 
 const registerUser = async (req, res) => {
-  const organization = req.organization.orgId;
-  const { email, password } = req.body;
+  const { email, password, company, username } = req.body;
 
-  const orgDB = await Organization.find({});
+  if (!email || !password || !company || !username) {
+    throw new BadRequestError(
+      'Please provide email, username, password and company name.'
+    );
+  }
 
-  const users = orgDB[0].users;
+  const cmp = await Company.findOne({ company });
+
+  const users = cmp.users;
 
   if (!users.includes(email)) {
     throw new BadRequestError(
-      'Sorry, the provided email is not recognized in this organization, please contact the admin and try again or check your email address.'
+      'Sorry, you have not been added to this company, contact the administrator to add your acccount.'
     );
   }
 
-  const userAlreadyExist = await User.findOne({ email });
+  const usersInDB = await User.find({ company });
 
-  if (userAlreadyExist) {
-    throw new BadRequestError(
-      'A user with this email has been registered in this organization, please try again or check your email address'
-    );
-  }
-
-  const user = await User.create({
-    organization,
-    email,
-    password,
+  usersInDB.forEach((user) => {
+    if (email === user.email) {
+      throw new BadRequestError(
+        'A user with this credentials already exist in the provided company'
+      );
+    }
   });
+
+  const user = await User.create(req.body);
 
   const token = user.createJWT();
 
@@ -39,21 +42,24 @@ const registerUser = async (req, res) => {
     user: {
       id: user._id,
       email: user.email,
+      username: user.username,
       role: user.role,
-      organization: user.organization,
+      company: user.company,
     },
     token,
   });
 };
 
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, company } = req.body;
 
-  if (!email || !password) {
-    throw new BadRequestError('Please provide email and password');
+  if (!email || !password || !company) {
+    throw new BadRequestError(
+      'Please provide email, password and company name'
+    );
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email, company });
 
   if (!user) {
     throw new UnauthenticatedError('Invalid credentials');
@@ -72,7 +78,8 @@ const loginUser = async (req, res) => {
     user: {
       id: user._id,
       email: user.email,
-      organization: user.organization,
+      username: user.username,
+      company: user.company,
     },
     token,
   });

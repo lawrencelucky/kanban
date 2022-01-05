@@ -10,7 +10,10 @@ const UserSchema = new mongoose.Schema({
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
       'Please provide a valid email address',
     ],
-    unique: true,
+  },
+  username: {
+    type: String,
+    required: [true, 'Please provide a username'],
   },
   password: {
     type: String,
@@ -21,10 +24,9 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'user',
   },
-  organization: {
-    type: mongoose.Types.ObjectId,
-    ref: 'Organization',
-    required: [true, 'Please provide an organiztion'],
+  company: {
+    type: String,
+    required: [true, 'Please provide a company'],
   },
 });
 
@@ -35,7 +37,7 @@ UserSchema.pre('save', async function () {
 
 UserSchema.methods.createJWT = function () {
   return jwt.sign(
-    { email: this.email, orgId: this.organization, userId: this._id },
+    { email: this.email, company: this.company, userId: this._id },
     process.env.USER_JWT_SECRET,
     { expiresIn: process.env.USER_JWT_EXPIRY }
   );

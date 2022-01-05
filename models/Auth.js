@@ -15,7 +15,7 @@ const AuthSchema = new mongoose.Schema(
     },
     username: {
       type: String,
-      required: [true, 'Please provide a nanme'],
+      required: [true, 'Please provide a username'],
     },
     password: {
       type: String,

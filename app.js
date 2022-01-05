@@ -10,11 +10,13 @@ const notFoundMiddleware = require('./middleware/not-found');
 const authenticateAdminMiddleware = require('./middleware/authenticateAdmin');
 const authRoute = require('./routes/auth');
 const companyRoute = require('./routes/company');
+const userRoute = require('./routes/user');
 
 app.use(express.json());
 
 app.use('/api/v1/auth', authRoute);
 app.use('/api/v1/company', authenticateAdminMiddleware, companyRoute);
+app.use('/api/v1/user', userRoute);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
