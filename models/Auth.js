@@ -36,13 +36,9 @@ AuthSchema.pre('save', async function () {
 });
 
 AuthSchema.methods.createJWT = function () {
-  return jwt.sign(
-    { adminId: this._id, email: this.email, username: this.username },
-    process.env.ADMIN_JWT_SECRET,
-    {
-      expiresIn: process.env.ADMIN_JWT_EXPIRY,
-    }
-  );
+  return jwt.sign({ adminId: this._id }, process.env.ADMIN_JWT_SECRET, {
+    expiresIn: process.env.ADMIN_JWT_EXPIRY,
+  });
 };
 
 AuthSchema.methods.comparePassword = async function (enteredPassword) {

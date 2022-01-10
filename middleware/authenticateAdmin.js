@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
 
+const Auth = require('../models/Auth');
 const { UnauthenticatedError } = require('../errors');
 
-const authenticateAdmin = (req, res, next) => {
+const authenticateAdmin = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer')) {
@@ -13,11 +14,7 @@ const authenticateAdmin = (req, res, next) => {
 
   try {
     const payload = jwt.verify(token, process.env.ADMIN_JWT_SECRET);
-    req.admin = {
-      adminId: payload.adminId,
-      email: payload.email,
-      username: payload.username,
-    };
+    req.admin = await Auth.findById(payload.adminId);
     next();
   } catch (error) {
     throw new UnauthenticatedError('Invalid token');

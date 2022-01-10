@@ -4,7 +4,7 @@ const Company = require('../models/Company');
 const { BadRequestError, NotFoundError } = require('../errors');
 
 const createCompany = async (req, res) => {
-  req.body.createdBy = req.admin.adminId;
+  req.body.createdBy = req.admin._id;
   const { company } = req.body;
 
   const companyAlreadyExist = await Company.findOne({ company });
@@ -12,6 +12,8 @@ const createCompany = async (req, res) => {
   if (companyAlreadyExist) {
     throw new BadRequestError('A company with this name already exists');
   }
+
+  console.log(req.body);
 
   const newCompany = await Company.create(req.body);
 
@@ -22,7 +24,8 @@ const createCompany = async (req, res) => {
 };
 
 const getAllCompany = async (req, res) => {
-  const adminId = req.admin.adminId;
+  const adminId = req.admin;
+  console.log(adminId);
   const company = await Company.find({ createdBy: adminId });
 
   res.status(StatusCodes.OK).json({
@@ -106,7 +109,7 @@ const removeUserFromCompany = async (req, res) => {
     );
   }
 
-  const company = await Company.findOneAndUpdate(
+  await Company.findOneAndUpdate(
     { _id: req.params.id },
     {
       $pull: { users: user.toLowerCase() },
